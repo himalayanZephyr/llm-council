@@ -1,6 +1,6 @@
 {
   "name": "llm-council",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Multi-LLM council that collects responses, peer-ranks them, and synthesizes a final answer",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -36,6 +36,14 @@
     "ollama",
     "multi-model"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/himalayanZephyr/llm-council.git"
+  },
+  "bugs": {
+    "url": "https://github.com/himalayanZephyr/llm-council/issues"
+  },
+  "homepage": "https://github.com/himalayanZephyr/llm-council#readme",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
