@@ -3,47 +3,66 @@
 A TypeScript library that implements the [LLM Council](https://github.com/karpathy/llm-council) pattern — query multiple LLMs, have them peer-review each other, and synthesize a final answer.
 
 ```
-                            +-------------+
-                            |    Query    |
-                            +------+------+
-                                   |
-                   +---------------+---------------+
-                   |               |               |
-            +------+------+ +-----+-----+ +-------+-----+
-            |   Model A   | |  Model B  | |   Model C   |
-            | "Response A"| |"Response B"| | "Response C"|
-            +------+------+ +-----+-----+ +-------+-----+
-                   |               |               |
-                   +-------+-------+-------+-------+
-                           |  STAGE 1 done |
-                           +-------+-------+
-                                   |
-                    +--------------+--------------+
-                    |              |              |
-             +------+------+ +----+------+ +-----+------+
-             |   Model A   | |  Model B  | |   Model C  |
-             |   reviews   | |  reviews  | |   reviews  |
-             | B,C (anon)  | | A,C (anon)| |  A,B (anon)|
-             +------+------+ +-----+-----+ +------+-----+
-                    |              |              |
-                    +--------------+--------------+
-                           |  STAGE 2 done |
-                           | (peer ranks)  |
-                           +-------+-------+
-                                   |
-                          +--------+--------+
-                          |    Chairman     |
-                          |    Model B      |
-                          |  synthesizes    |
-                          | all responses + |
-                          | rankings into   |
-                          | final answer    |
-                          +--------+--------+
-                                   |
-                            +------+------+
-                            | STAGE 3     |
-                            | Final Answer|
-                            +-------------+
+                            ┌─────────────┐
+                            │  User Query │
+                            └──────┬──────┘
+                                   │
+  ┌────────────────────────────────┼────────────────────────────────┐
+  │  STAGE 1: RESPOND              │                     [parallel] │
+  │                                │                                │
+  │          ┌─────────────────────┼─────────────────────┐          │
+  │          │                     │                     │          │
+  │          ▼                     ▼                    ▼          │
+  │   ┌─────────────┐      ┌─────────────┐      ┌─────────────┐     │
+  │   │   Model A   │      │   Model B   │      │   Model C   │     │
+  │   │  answers    │      │  answers    │      │  answers    │     │
+  │   │  the query  │      │  the query  │      │  the query  │     │
+  │   └──────┬──────┘      └──────┬──────┘      └──────┬──────┘     │
+  │          │                    │                    │            │
+  │          ▼                    ▼                   ▼            │
+  │     Response A           Response B           Response C        │
+  │                                                                 │
+  └───────────────────────────────┬───────────────────────────────--┘
+                                  │
+                                  ▼
+  ┌───────────────────────────────────────────────────────────────┐
+  │  STAGE 2: PEER RANK               [anonymized] [parallel]     │
+  │                                                               │
+  │   Each model ranks ALL responses (including its own,          │
+  │   unknowingly — identities are hidden as A, B, C)             │
+  │                                                               │
+  │   ┌─────────────┐      ┌─────────────┐      ┌─────────────┐   │
+  │   │   Model A   │      │   Model B   │      │   Model C   │   │
+  │   │             │      │             │      │             │   │
+  │   │ ranks A,B,C │      │ ranks A,B,C │      │ ranks A,B,C │   │
+  │   │ (anonymous) │      │ (anonymous) │      │ (anonymous) │   │
+  │   └──────┬──────┘      └──────┬──────┘      └──────┬──────┘   │
+  │          │                    │                    │          │
+  │          ▼                    ▼                   ▼          │
+  │       Rankings ────────► Aggregate ◄──────── Rankings        │
+  │                          Rankings                             │
+  └───────────────────────────────┬───────────────────────────────┘
+                                  │
+                                  ▼
+  ┌───────────────────────────────────────────────────────────────┐
+  │  STAGE 3: SYNTHESIZE                                          │
+  │                                                               │
+  │            ┌───────────────────────────────┐                  │
+  │            │     ★ Chairman Model ★       │                  │
+  │            │                               │                  │
+  │            │  receives all responses       │                  │
+  │            │  + all peer rankings          │                  │
+  │            │                               │                  │
+  │            │  synthesizes one final        │                  │
+  │            │  comprehensive answer         │                  │
+  │            └───────────────┬───────────────┘                  │
+  │                            │                                  │
+  └────────────────────────────┼──────────────────────────────────┘
+                               │
+                               ▼
+                     ┌─────────────────┐
+                     │  Final Answer   │
+                     └─────────────────┘
 ```
 
 ## Install
