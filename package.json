@@ -1,6 +1,6 @@
 {
   "name": "llm-council",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Multi-LLM council that collects responses, peer-ranks them, and synthesizes a final answer",
   "type": "module",
   "main": "./dist/index.cjs",
