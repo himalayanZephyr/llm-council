@@ -99,13 +99,11 @@ export class LLMCouncil {
     );
 
     const entries: Stage1Entry[] = [];
-    const failures: string[] = [];
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
       if (result.status === 'fulfilled') {
         entries.push(result.value);
       } else {
-        failures.push(this.models[i]);
         this.log(`  ${this.models[i]} failed: ${result.reason}`);
       }
     }

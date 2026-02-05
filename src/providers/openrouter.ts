@@ -13,33 +13,26 @@ export class OpenRouterProvider implements LLMProvider {
   }
 
   async chat(model: string, messages: ChatMessage[]): Promise<string> {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeout);
+    const res = await fetch(`${this.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({ model, messages }),
+      signal: AbortSignal.timeout(this.timeout),
+    });
 
-    try {
-      const res = await fetch(`${this.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({ model, messages }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(`OpenRouter API error (${res.status}): ${body}`);
-      }
-
-      const data = await res.json();
-      const content = data.choices?.[0]?.message?.content;
-      if (typeof content !== 'string') {
-        throw new Error(`Unexpected response format from ${model}`);
-      }
-      return content;
-    } finally {
-      clearTimeout(timer);
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`OpenRouter API error (${res.status}): ${body}`);
     }
+
+    const data = await res.json();
+    const content = data.choices?.[0]?.message?.content;
+    if (typeof content !== 'string') {
+      throw new Error(`Unexpected response format from ${model}`);
+    }
+    return content;
   }
 }

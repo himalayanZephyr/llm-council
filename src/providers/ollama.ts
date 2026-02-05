@@ -11,30 +11,23 @@ export class OllamaProvider implements LLMProvider {
   }
 
   async chat(model: string, messages: ChatMessage[]): Promise<string> {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeout);
+    const res = await fetch(`${this.baseUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model, messages, stream: false }),
+      signal: AbortSignal.timeout(this.timeout),
+    });
 
-    try {
-      const res = await fetch(`${this.baseUrl}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, messages, stream: false }),
-        signal: controller.signal,
-      });
-
-      if (!res.ok) {
-        const body = await res.text();
-        throw new Error(`Ollama API error (${res.status}): ${body}`);
-      }
-
-      const data = await res.json();
-      const content = data.message?.content;
-      if (typeof content !== 'string') {
-        throw new Error(`Unexpected response format from ${model}`);
-      }
-      return content;
-    } finally {
-      clearTimeout(timer);
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Ollama API error (${res.status}): ${body}`);
     }
+
+    const data = await res.json();
+    const content = data.message?.content;
+    if (typeof content !== 'string') {
+      throw new Error(`Unexpected response format from ${model}`);
+    }
+    return content;
   }
 }
