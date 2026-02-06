@@ -2,6 +2,8 @@
 
 A TypeScript library that implements the [LLM Council](https://github.com/karpathy/llm-council) pattern — query multiple LLMs, have them peer-review each other, and synthesize a final answer.
 
+[![npm](https://img.shields.io/npm/v/llm-council)](https://www.npmjs.com/package/llm-council)
+
 ```
                            +--------------+
                            |  User Query  |
